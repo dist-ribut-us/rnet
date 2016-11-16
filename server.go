@@ -5,8 +5,11 @@ import (
 	"time"
 )
 
+// MaxUdpPacketLength is the max possible length after the UDP headers are
+// removed
 const MaxUdpPacketLength = 65507
 
+// Server is a UDP server that can be used to send and receive UPD packets
 type Server struct {
 	conn          *net.UDPConn
 	packetHandler PacketHandler
@@ -14,12 +17,12 @@ type Server struct {
 	stop, running bool
 }
 
+// PacketHandler is an interface for receiving packets from a UDP server
 type PacketHandler interface {
 	Receive([]byte, *Addr)
 }
 
-// New creates a Server
-// passing in ":0" for port will select any open port
+// New creates a Server passing in ":0" for port will select any open port
 func New(port string, packetHandler PacketHandler) (*Server, error) {
 	laddr, err := net.ResolveUDPAddr("udp", port)
 	if err != nil {
@@ -72,12 +75,12 @@ func (s *Server) Run() {
 	s.running = false
 }
 
-// Returns true if the server is running and can receive messages
-// Even if the server is not running, it can still send
+// IsRunning returns true if the server is running and can receive messages.
+// Even if the server is not running, it can still send.
 func (s *Server) IsRunning() bool { return s.running }
 
-// Returns true if the connection is open
-// If the server is closed, it can neither send nor receive
+// IsOpen returns true if the connection is open. If the server is closed, it
+// can neither send nor receive
 func (s *Server) IsOpen() bool { return s.conn != nil }
 
 // Stop will stop the server

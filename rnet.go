@@ -10,6 +10,7 @@ type Addr struct {
 	*net.UDPAddr
 }
 
+// String returns the address as IP:Port
 func (a *Addr) String() string {
 	if a == nil {
 		return ""
@@ -17,11 +18,13 @@ func (a *Addr) String() string {
 	return fmt.Sprintf("%s:%d", a.IP.String(), a.Port)
 }
 
+// ResolveAddr takes a string and returns an Addr
 func ResolveAddr(addr string) (*Addr, error) {
 	udp, err := net.ResolveUDPAddr("udp", addr)
 	return &Addr{udp}, err
 }
 
+// GetLocalIPs returns all local IP addresses that are not loopback addresses
 func GetLocalIPs() []string {
 	var ips []string
 	addrs, err := net.InterfaceAddrs()
