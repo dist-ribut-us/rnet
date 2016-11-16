@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// MaxUdpPacketLength is the max possible length after the UDP headers are
+// MaxUDPPacketLength is the max possible length after the UDP headers are
 // removed
-const MaxUdpPacketLength = 65507
+const MaxUDPPacketLength = 65507
 
 // Server is a UDP server that can be used to send and receive UPD packets
 type Server struct {
@@ -60,7 +60,7 @@ func (s *Server) Run() {
 		return
 	}
 	s.running = true
-	buf := make([]byte, MaxUdpPacketLength)
+	buf := make([]byte, MaxUDPPacketLength)
 	for {
 		l, addr, err := s.conn.ReadFromUDP(buf)
 		if s.stop {
