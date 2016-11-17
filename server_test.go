@@ -43,6 +43,8 @@ func TestServer(t *testing.T) {
 		t.Error("Incorrect Address")
 	}
 
+	assert.Equal(t, 5555, s.Port())
+
 	s.Close()
 	s2.Close()
 }

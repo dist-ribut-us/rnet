@@ -15,6 +15,7 @@ type Server struct {
 	packetHandler PacketHandler
 	localIP       string
 	stop, running bool
+	port          int
 }
 
 // PacketHandler is an interface for receiving packets from a UDP server
@@ -41,6 +42,17 @@ func New(port string, packetHandler PacketHandler) (*Server, error) {
 		running:       false,
 	}
 	return server, nil
+}
+
+// Port returns the port the server is listening on
+func (s *Server) Port() int {
+	if s.port == 0 && s.conn != nil {
+		addr := s.conn.LocalAddr()
+		if udpaddr, ok := addr.(*net.UDPAddr); ok {
+			s.port = udpaddr.Port
+		}
+	}
+	return s.port
 }
 
 // RunNew is a wrapper around new that also calls Run in a Go routine if the
