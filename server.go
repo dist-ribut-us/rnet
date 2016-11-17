@@ -13,7 +13,6 @@ const MaxUDPPacketLength = 65507
 type Server struct {
 	conn          *net.UDPConn
 	packetHandler PacketHandler
-	localIP       string
 	stop, running bool
 	port          int
 }
@@ -37,7 +36,6 @@ func New(port string, packetHandler PacketHandler) (*Server, error) {
 	server := &Server{
 		conn:          conn,
 		packetHandler: packetHandler,
-		localIP:       getLocalIP(),
 		stop:          false,
 		running:       false,
 	}
@@ -130,35 +128,4 @@ func (s *Server) SendAll(packets [][]byte, addr *Addr) error {
 		time.Sleep(time.Millisecond)
 	}
 	return last
-}
-
-// LocalIP is a getter for the localIP, which is set when the server starts
-func (s *Server) LocalIP() string { return s.localIP }
-
-// getLocalIp loops over the interface addresses to find one that is not a loopback
-// address and uses that as it's local IP. It may not be fool proof and requires
-// further investigation, but it does seem to work.
-func getLocalIP() string {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		panic(err)
-	}
-
-	for _, a := range addrs {
-		var ip *net.IP
-		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			ip = &ipnet.IP
-		} else if ipaddr, ok := a.(*net.IPAddr); ok && !ipaddr.IP.IsLoopback() {
-			ip = &ipaddr.IP
-		}
-		if ip != nil {
-			if ip.To4() != nil {
-				addr := ip.String()
-				if addr != "0.0.0.0" {
-					return addr
-				}
-			}
-		}
-	}
-	return ""
 }
