@@ -22,7 +22,9 @@ type PacketHandler interface {
 	Receive([]byte, *Addr)
 }
 
-// New creates a Server passing in ":0" for port will select any open port
+// New creates a Server passing in ":0" for port will select any open port. It
+// is also possible to specify a full IP address for port, as long as the
+// address is local, but generally only a port is specified.
 func New(port string, packetHandler PacketHandler) (*Server, error) {
 	laddr, err := net.ResolveUDPAddr("udp", port)
 	if err != nil {

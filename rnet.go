@@ -1,6 +1,7 @@
 package rnet
 
 import (
+	"crypto/rand"
 	"fmt"
 	"net"
 )
@@ -50,4 +51,15 @@ func GetLocalIPs() []string {
 		}
 	}
 	return ips
+}
+
+// RandomPort picks a random port number between 1000 and 65534 (inclusive)
+func RandomPort() int {
+	var p int
+	b := make([]byte, 2)
+	for p < 1000 {
+		rand.Read(b)
+		p = int(b[0]) + int(b[1])<<8
+	}
+	return p
 }
