@@ -103,14 +103,14 @@ func (s *Server) Stop() error {
 
 // Close will close the connection, freeing the port
 func (s *Server) Close() error {
-	err := s.Stop()
-	if err != nil {
+	if err := s.Stop(); err != nil {
 		return err
 	}
-	if err = s.conn.Close(); err != nil {
-		s.conn = nil
+	if err := s.conn.Close(); err != nil {
+		return err
 	}
-	return err
+	s.conn = nil
+	return nil
 }
 
 // Send will send a single packe (byte slice) to an address
