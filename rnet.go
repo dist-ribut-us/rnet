@@ -53,13 +53,24 @@ func GetLocalIPs() []string {
 	return ips
 }
 
+// Port is a convenience as sometimes a port needs to be a number and sometimes
+// it needs to be a string.
+type Port uint16
+
+// String return the port as string starting with :
+func (p Port) String() string { return fmt.Sprintf(":%d", p) }
+
+func (p Port) On(ip string) (*Addr, error) {
+	return ResolveAddr(fmt.Sprintf("%s%s", ip, p))
+}
+
 // RandomPort picks a random port number between 1000 and 65534 (inclusive)
-func RandomPort() int {
-	var p int
+func RandomPort() Port {
+	var p uint16
 	b := make([]byte, 2)
 	for p < 1000 {
 		rand.Read(b)
-		p = int(b[0]) + int(b[1])<<8
+		p = uint16(b[0]) + uint16(b[1])<<8
 	}
-	return p
+	return Port(p)
 }
