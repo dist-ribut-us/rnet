@@ -14,7 +14,7 @@ type Server struct {
 	conn          *net.UDPConn
 	packetHandler PacketHandler
 	stop, running bool
-	port          int
+	port          Port
 }
 
 // PacketHandler is an interface for receiving packets from a UDP server
@@ -25,8 +25,8 @@ type PacketHandler interface {
 // New creates a Server passing in ":0" for port will select any open port. It
 // is also possible to specify a full IP address for port, as long as the
 // address is local, but generally only a port is specified.
-func New(port string, packetHandler PacketHandler) (*Server, error) {
-	laddr, err := net.ResolveUDPAddr("udp", port)
+func New(port Port, packetHandler PacketHandler) (*Server, error) {
+	laddr, err := net.ResolveUDPAddr("udp", port.String())
 	if err != nil {
 		return nil, err
 	}
@@ -40,16 +40,17 @@ func New(port string, packetHandler PacketHandler) (*Server, error) {
 		packetHandler: packetHandler,
 		stop:          false,
 		running:       false,
+		port:          port,
 	}
 	return server, nil
 }
 
 // Port returns the port the server is listening on
-func (s *Server) Port() int {
+func (s *Server) Port() Port {
 	if s.port == 0 && s.conn != nil {
 		addr := s.conn.LocalAddr()
 		if udpaddr, ok := addr.(*net.UDPAddr); ok {
-			s.port = udpaddr.Port
+			s.port = Port(udpaddr.Port)
 		}
 	}
 	return s.port
@@ -57,7 +58,7 @@ func (s *Server) Port() int {
 
 // RunNew is a wrapper around new that also calls Run in a Go routine if the
 // server was created without error
-func RunNew(port string, packetHandler PacketHandler) (*Server, error) {
+func RunNew(port Port, packetHandler PacketHandler) (*Server, error) {
 	s, err := New(port, packetHandler)
 	if err == nil {
 		go s.Run()
@@ -81,7 +82,7 @@ func (s *Server) Run() {
 		if err == nil {
 			packet := make([]byte, l)
 			copy(packet, buf[:l])
-			go s.packetHandler.Receive(packet, &Addr{addr})
+			go s.packetHandler.Receive(packet, &Addr{addr, nil})
 		}
 	}
 	s.running = false

@@ -9,11 +9,12 @@ import (
 // Addr wraps net.UDPAddr and adds additional useful methods
 type Addr struct {
 	*net.UDPAddr
+	Err error
 }
 
 // String returns the address as IP:Port
 func (a *Addr) String() string {
-	if a == nil {
+	if a == nil || a.UDPAddr == nil {
 		return ""
 	}
 	return fmt.Sprintf("%s:%d", a.IP.String(), a.Port)
@@ -22,7 +23,7 @@ func (a *Addr) String() string {
 // ResolveAddr takes a string and returns an Addr
 func ResolveAddr(addr string) (*Addr, error) {
 	udp, err := net.ResolveUDPAddr("udp", addr)
-	return &Addr{udp}, err
+	return &Addr{udp, err}, err
 }
 
 // GetLocalIPs returns all local IP addresses that are not loopback addresses
@@ -60,8 +61,15 @@ type Port uint16
 // String return the port as string starting with :
 func (p Port) String() string { return fmt.Sprintf(":%d", p) }
 
-func (p Port) On(ip string) (*Addr, error) {
-	return ResolveAddr(fmt.Sprintf("%s%s", ip, p))
+func (p Port) On(ip string) *Addr {
+	a, _ := ResolveAddr(fmt.Sprintf("%s:%d", ip, p))
+	return a
+}
+
+// Addr returns the port as an *Addr
+func (p Port) Addr() *Addr {
+	a, _ := ResolveAddr(fmt.Sprintf(":%d", p))
+	return a
 }
 
 // RandomPort picks a random port number between 1000 and 65534 (inclusive)

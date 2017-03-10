@@ -17,14 +17,15 @@ func (ph *PH) Receive(pck []byte, addr *Addr) {
 }
 
 func TestServer(t *testing.T) {
+	port := Port(5556)
+	addr := port.Addr()
+
 	p := &PH{}
-	s, err := New(":5555", p)
+	s, err := New(5555, p)
 	assert.NoError(t, err)
-	s2, err := RunNew(":5556", p)
+	s2, err := RunNew(port, p)
 	assert.NoError(t, err)
 
-	addr, err := ResolveAddr(":5556")
-	assert.NoError(t, err)
 	s.Send([]byte{1, 2, 3}, addr)
 
 	for i := 0; i < 10; i++ {
@@ -43,7 +44,7 @@ func TestServer(t *testing.T) {
 		t.Error("Incorrect Address")
 	}
 
-	assert.Equal(t, 5555, s.Port())
+	assert.Equal(t, Port(5555), s.Port())
 
 	s.Close()
 	s2.Close()
@@ -51,7 +52,7 @@ func TestServer(t *testing.T) {
 
 func TestStop(t *testing.T) {
 	p := &PH{}
-	s, err := RunNew(":5557", p)
+	s, err := RunNew(5557, p)
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond)
 	if !s.running {
@@ -67,12 +68,12 @@ func TestStop(t *testing.T) {
 
 func TestClose(t *testing.T) {
 	p := &PH{}
-	s, err := RunNew(":5558", p)
+	s, err := RunNew(5558, p)
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond)
 	s.Close()
 	time.Sleep(time.Millisecond)
-	s2, err := RunNew(":5558", p)
+	s2, err := RunNew(5558, p)
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond)
 	s2.Close()
