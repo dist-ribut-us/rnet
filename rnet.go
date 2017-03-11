@@ -69,6 +69,9 @@ type Port uint16
 // String return the port as string starting with :
 func (p Port) String() string { return fmt.Sprintf(":%d", p) }
 
+// RawStr return the port as string
+func (p Port) RawStr() string { return fmt.Sprintf("%d", p) }
+
 // On returns a reference to the port on the given ip as an address
 func (p Port) On(ip string) *Addr {
 	a, _ := ResolveAddr(fmt.Sprintf("%s:%d", ip, p))
