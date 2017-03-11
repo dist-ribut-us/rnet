@@ -17,7 +17,15 @@ func (a *Addr) String() string {
 	if a == nil || a.UDPAddr == nil {
 		return ""
 	}
-	return fmt.Sprintf("%s:%d", a.IP.String(), a.Port)
+	return fmt.Sprintf("%s%s", a.IP, a.Port())
+}
+
+// Port returns the port of an address
+func (a *Addr) Port() Port {
+	if a == nil || a.UDPAddr == nil {
+		return Port(0)
+	}
+	return Port(a.UDPAddr.Port)
 }
 
 // ResolveAddr takes a string and returns an Addr
@@ -61,6 +69,7 @@ type Port uint16
 // String return the port as string starting with :
 func (p Port) String() string { return fmt.Sprintf(":%d", p) }
 
+// On returns a reference to the port on the given ip as an address
 func (p Port) On(ip string) *Addr {
 	a, _ := ResolveAddr(fmt.Sprintf("%s:%d", ip, p))
 	return a

@@ -9,9 +9,17 @@ import (
 // removed
 const MaxUDPPacketLength = 65507
 
+type udpconn interface {
+	LocalAddr() net.Addr
+	ReadFromUDP([]byte) (int, *net.UDPAddr, error)
+	WriteToUDP([]byte, *net.UDPAddr) (int, error)
+	SetReadDeadline(time.Time) error
+	Close() error
+}
+
 // Server is a UDP server that can be used to send and receive UPD packets
 type Server struct {
-	conn          *net.UDPConn
+	conn          udpconn
 	packetHandler PacketHandler
 	stop, running bool
 	port          Port
@@ -116,19 +124,19 @@ func (s *Server) Close() error {
 
 // Send will send a single packe (byte slice) to an address
 // just a wrapper around WriteToUDP
-func (s *Server) Send(packet []byte, addr *Addr) (int, error) {
-	return s.conn.WriteToUDP(packet, addr.UDPAddr)
+func (s *Server) Send(packet []byte, addr *Addr) error {
+	_, err := s.conn.WriteToUDP(packet, addr.UDPAddr)
+	return err
 }
 
 // SendAll sends a slice of packets (byte slices) to an address
 // this will return the last error it encoutered, if it encountered any
-func (s *Server) SendAll(packets [][]byte, addr *Addr) error {
-	var last error
+func (s *Server) SendAll(packets [][]byte, addr *Addr) (errs []error) {
 	for _, p := range packets {
-		if _, e := s.Send(p, addr); e != nil {
-			last = e
+		if _, err := s.conn.WriteToUDP(p, addr.UDPAddr); err != nil {
+			errs = append(errs, err)
 		}
 		time.Sleep(time.Millisecond)
 	}
-	return last
+	return
 }

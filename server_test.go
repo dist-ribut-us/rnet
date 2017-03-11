@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-type PH struct {
+type packetHandler struct {
 	packet []byte
 	addr   *Addr
 }
 
-func (ph *PH) Receive(pck []byte, addr *Addr) {
+func (ph *packetHandler) Receive(pck []byte, addr *Addr) {
 	ph.packet = pck
 	ph.addr = addr
 }
@@ -20,7 +20,7 @@ func TestServer(t *testing.T) {
 	port := Port(5556)
 	addr := port.Addr()
 
-	p := &PH{}
+	p := &packetHandler{}
 	s, err := New(5555, p)
 	assert.NoError(t, err)
 	s2, err := RunNew(port, p)
@@ -51,7 +51,7 @@ func TestServer(t *testing.T) {
 }
 
 func TestStop(t *testing.T) {
-	p := &PH{}
+	p := &packetHandler{}
 	s, err := RunNew(5557, p)
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond)
@@ -67,7 +67,7 @@ func TestStop(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	p := &PH{}
+	p := &packetHandler{}
 	s, err := RunNew(5558, p)
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond)
