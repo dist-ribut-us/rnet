@@ -1,6 +1,7 @@
 package rnet
 
 import (
+	"github.com/dist-ribut-us/log"
 	"net"
 	"time"
 )
@@ -35,9 +36,7 @@ type PacketHandler interface {
 // address is local, but generally only a port is specified.
 func New(port Port, packetHandler PacketHandler) (*Server, error) {
 	laddr, err := net.ResolveUDPAddr("udp", port.String())
-	if err != nil {
-		return nil, err
-	}
+	log.Error(err)
 	conn, err := net.ListenUDP("udp", laddr)
 	if err != nil {
 		return nil, err
@@ -87,7 +86,7 @@ func (s *Server) Run() {
 		if s.stop {
 			break
 		}
-		if err == nil {
+		if !log.Error(err) {
 			packet := make([]byte, l)
 			copy(packet, buf[:l])
 			go s.packetHandler.Receive(packet, &Addr{addr, nil})
