@@ -12,6 +12,17 @@ type Addr struct {
 	Err error
 }
 
+// NewAddr creates an address from the primatives in net.UDPAddr
+func NewAddr(ip []byte, port int, zone string) *Addr {
+	return &Addr{
+		UDPAddr: &net.UDPAddr{
+			IP:   ip,
+			Port: port,
+			Zone: zone,
+		},
+	}
+}
+
 // String returns the address as IP:Port
 func (a *Addr) String() string {
 	if a == nil || a.UDPAddr == nil {
