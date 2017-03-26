@@ -95,6 +95,12 @@ func (p Port) Addr() *Addr {
 	return a
 }
 
+// Local returns the port as an *Addr on 127.0.0.1
+func (p Port) Local() *Addr {
+	a, _ := ResolveAddr(fmt.Sprintf("127.0.0.1:%d", p))
+	return a
+}
+
 // RandomPort picks a random port number between 1000 and 65534 (inclusive)
 func RandomPort() Port {
 	var p uint16
