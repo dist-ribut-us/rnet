@@ -1,6 +1,7 @@
 package rnet
 
 import (
+	"github.com/dist-ribut-us/errors"
 	"github.com/dist-ribut-us/log"
 	"net"
 	"time"
@@ -121,9 +122,16 @@ func (s *Server) Close() error {
 	return nil
 }
 
+// ErrWriteToNilUDP is returned when trying to write a server after calling
+// Close.
+const ErrWriteToNilUDP = errors.String("Cannot write to nil UDP connection")
+
 // Send will send a single packe (byte slice) to an address
 // just a wrapper around WriteToUDP
 func (s *Server) Send(packet []byte, addr *Addr) error {
+	if s.conn == nil {
+		return ErrWriteToNilUDP
+	}
 	_, err := s.conn.WriteToUDP(packet, addr.UDPAddr)
 	return err
 }
@@ -132,6 +140,10 @@ func (s *Server) Send(packet []byte, addr *Addr) error {
 // this will return the last error it encoutered, if it encountered any
 func (s *Server) SendAll(packets [][]byte, addr *Addr) (errs []error) {
 	for _, p := range packets {
+		if s.conn == nil {
+			errs = append(errs, ErrWriteToNilUDP)
+			return
+		}
 		if _, err := s.conn.WriteToUDP(p, addr.UDPAddr); err != nil {
 			errs = append(errs, err)
 		}
