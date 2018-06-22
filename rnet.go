@@ -89,6 +89,9 @@ func (p Port) On(ip string) *Addr {
 	return a
 }
 
+// Port fulfills the Porter interface
+func (p Port) Port() Port { return p }
+
 // Addr returns the port as an *Addr
 func (p Port) Addr() *Addr {
 	a, _ := ResolveAddr(fmt.Sprintf(":%d", p))
@@ -110,4 +113,9 @@ func RandomPort() Port {
 		p = uint16(b[0]) + uint16(b[1])<<8
 	}
 	return Port(p)
+}
+
+// Porter is fulfilled by describing a port
+type Porter interface {
+	Port() Port
 }

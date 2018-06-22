@@ -14,3 +14,9 @@ func TestAddrString(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, addrStr, a.String())
 }
+
+func TestIncrementer(t *testing.T) {
+	pi := NewPortIncrementer(5555)
+	assert.Equal(t, Port(5556), pi.Next())
+	assert.Equal(t, Port(5557), pi.Next())
+}
