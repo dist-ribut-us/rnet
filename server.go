@@ -53,8 +53,8 @@ func New(port Port, packetHandler PacketHandler) (*Server, error) {
 	return server, nil
 }
 
-// Port returns the port the server is listening on
-func (s *Server) Port() Port {
+// GetPort returns the port the server is listening on
+func (s *Server) GetPort() Port {
 	if s.port == 0 && s.conn != nil {
 		addr := s.conn.LocalAddr()
 		if udpaddr, ok := addr.(*net.UDPAddr); ok {

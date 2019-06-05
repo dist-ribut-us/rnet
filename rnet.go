@@ -3,7 +3,10 @@ package rnet
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/dist-ribut-us/errors"
+	"github.com/dist-ribut-us/serial"
 	"net"
+	"strconv"
 )
 
 // Addr wraps net.UDPAddr and adds additional useful methods
@@ -28,15 +31,48 @@ func (a *Addr) String() string {
 	if a == nil || a.UDPAddr == nil {
 		return ""
 	}
-	return fmt.Sprintf("%s%s", a.IP, a.Port())
+	return fmt.Sprintf("%s%s", a.IP, a.GetPort())
 }
 
-// Port returns the port of an address
-func (a *Addr) Port() Port {
+// GetPort returns the port of an address
+func (a *Addr) GetPort() Port {
 	if a == nil || a.UDPAddr == nil {
 		return Port(0)
 	}
 	return Port(a.UDPAddr.Port)
+}
+
+// ErrNilAddr is returned when trying to marshal a nil address.
+const ErrNilAddr = errors.String("Addr is nil")
+
+var addrPrefixLens = []int{2, -2, 0}
+
+// Marshal an address to a byte slice
+func (a *Addr) Marshal() ([]byte, error) {
+	if a == nil {
+		return nil, ErrNilAddr
+	}
+	data := [][]byte{
+		a.IP,
+		serial.MarshalUint16(uint16(a.UDPAddr.Port), []byte{0, 0}),
+		[]byte(a.Zone),
+	}
+	return serial.MarshalByteSlices(addrPrefixLens, data)
+}
+
+// Unmarshal address from byte slice
+func (a *Addr) Unmarshal(b []byte) error {
+	data, err := serial.UnmarshalByteSlices(addrPrefixLens, b)
+	if err != nil {
+		return nil
+	}
+	if a.UDPAddr == nil {
+		a.UDPAddr = &net.UDPAddr{}
+	}
+	a.IP = data[0]
+	a.UDPAddr.Port = int(serial.UnmarshalUint16(data[1]))
+	a.Zone = string(data[2])
+	return nil
 }
 
 // ResolveAddr takes a string and returns an Addr
@@ -81,7 +117,7 @@ type Port uint16
 func (p Port) String() string { return fmt.Sprintf(":%d", p) }
 
 // RawStr return the port as string
-func (p Port) RawStr() string { return fmt.Sprintf("%d", p) }
+func (p Port) RawStr() string { return strconv.Itoa(int(p)) }
 
 // On returns a reference to the port on the given ip as an address
 func (p Port) On(ip string) *Addr {
@@ -89,8 +125,8 @@ func (p Port) On(ip string) *Addr {
 	return a
 }
 
-// Port fulfills the Porter interface
-func (p Port) Port() Port { return p }
+// GetPort fulfills the Porter interface
+func (p Port) GetPort() Port { return p }
 
 // Addr returns the port as an *Addr
 func (p Port) Addr() *Addr {
@@ -117,5 +153,5 @@ func RandomPort() Port {
 
 // Porter is fulfilled by describing a port
 type Porter interface {
-	Port() Port
+	GetPort() Port
 }
